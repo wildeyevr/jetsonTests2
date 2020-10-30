@@ -4,14 +4,15 @@ from adafruit_servokit import ServoKit
 import time
 
 
-net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=0.25)
+net = jetson.inference.detectNet("ssd-mobilenet-v2", threshold=.25)
 camera = jetson.utils.videoSource("csi://0")  # '/dev/video0' for V4L2
 kit = ServoKit(channels=16)
 kit.servo[3].angle = 180
 
 xAngle = 0
 lastRectCenter = .5
-scanMode = False
+scanMode = True
+thresh = 0
 
 while True:
     img = camera.Capture()
@@ -19,14 +20,15 @@ while True:
     detections = net.Detect(img)
     if detections:
         scanMode = False
+        print(detections[0].Confidence)
+        # print('tracking...')
     else:
         scanMode = True
-        print(scanMode)
+        # print('scanning...')
 
     if not scanMode:
         if net.GetClassDesc(detections[0].ClassID) == 'person':
             curRectCenter = detections[0].Center[0] / width
-            print(curRectCenter)
             imageCenterX = .5
 
             if curRectCenter >= .75:
@@ -46,23 +48,27 @@ while True:
             try:
                 kit.servo[0].angle = xAngle
             except ValueError:
-                print('probably out of range')
+                # print('probably out of range')
+                pass
     else:
+
+        x = 0
+        y = 180
         for x in range(xAngle, 180):
             if not detections:
                 try:
                     kit.servo[0].angle = x
-                    time.sleep(.075)
+                    time.sleep(.01)
                 except ValueError:
-                    print('probably out of range')
+                    pass
             else:
                 break
         for y in range(180, xAngle, -1):
             if not detections:
                 try:
                     kit.servo[0].angle = y
-                    time.sleep(.075)
+                    time.sleep(.01)
                 except ValueError:
-                    print('probably out of range')
+                    pass
             else:
                 break
