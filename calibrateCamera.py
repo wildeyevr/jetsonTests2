@@ -1,4 +1,4 @@
-"""fuck shit calibrate program... need to clean up and comment... and maybe make faster... idk..."""
+# TODO: quick/dirty/messy... need to clean up/make more modular... maybe make faster..."""
 import cv2
 #assert cv2.__version__[0] == '3', 'The fisheye module requires opencv version >= 3.0.0'
 import numpy as np
